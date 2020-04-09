@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -349,5 +349,65 @@ namespace MarkdownTableProcessor
             }
         }
 
+        public void FixComment(string f)
+        {
+            string o = f + "h";
+            if (File.Exists(o))
+                File.Delete(o);
+            UTF8Encoding utf8 = new UTF8Encoding(false);
+            StreamReader sr = new StreamReader(f, Encoding.UTF8, true);
+            StreamWriter sw = new StreamWriter(o, false, utf8);
+            sw.AutoFlush = true;
+
+            string line = string.Empty;
+            bool CommentStart = false;
+            while (sr.Peek() > -1)
+            {
+                line = sr.ReadLine();
+                if (line.TrimStart().StartsWith("/*"))
+                {
+                    if (!CommentStart)
+                    {
+                        CommentStart = true;
+                        sw.WriteLine(line);
+                    }
+                    else
+                    {
+                        if (!line.TrimStart().StartsWith("*"))
+                        {
+                            sw.WriteLine("* " + line);
+                        }
+                        else
+                        {
+                            sw.WriteLine(line);
+                        }
+                    }
+                }
+                else if (line.Contains("*/"))
+                {
+                    CommentStart = false;
+                    sw.WriteLine(line);
+                }
+                else
+                {
+                    if (CommentStart)
+                    {
+                        if (!line.TrimStart().StartsWith("*"))
+                        {
+                            sw.WriteLine("* " + line);
+                        }
+                        else
+                        {
+                            sw.WriteLine(line);
+                        }
+                    }
+                    else
+                    {
+                        sw.WriteLine(line);
+                    }
+                    
+                }
+            }
+        }
     }
 }
